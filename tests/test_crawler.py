@@ -16,14 +16,14 @@ def fake_resp():
     return FakeResp
 
 
-def test_format_search_url_encodes_unicode():
+def test_get_search_params_returns_url_and_params():
     c = Crawler(
         keywords=["пайтон", "httpx"], search_type="Repositories", proxy="http://p:1"
     )
-    url = c.format_search_url()
-    assert url.startswith("https://github.com/search?")
-    assert "q=%D0%BF%D0%B0%D0%B9%D1%82%D0%BE%D0%BD+httpx" in url
-    assert "type=Repositories" in url
+    url, params = c.get_search_url_with_params()
+    assert url == "https://github.com/search"
+    assert params["q"] == "пайтон httpx"
+    assert params["type"] == "Repositories"
 
 
 def test_owner_from_url_success():
@@ -125,7 +125,7 @@ async def test_run_success_parses_and_extra(monkeypatch, load_fixture, fake_resp
 
     async def mock_fetch(self, url, **kw):
         calls["n"] += 1
-        if "search?" in url:
+        if "search" in url:
             return fake_resp(text=search_html)
         return fake_resp(text=repo_html)
 

@@ -51,7 +51,6 @@ def parse_and_normalize_args(argv: list[str] | None = None) -> tuple[dict, str |
 
     try:
         normalized_proxies = [normalize_proxy(pr.strip()) for pr in a.proxies]
-        proxy = random.choice(normalized_proxies)
     except ValueError as e:
         p.error(f"Invalid proxy format: {e}")
 
@@ -61,13 +60,12 @@ def parse_and_normalize_args(argv: list[str] | None = None) -> tuple[dict, str |
             p.error(f"Output directory does not exist: {outdir}")
 
     if a.with_extra and a.type != "Repositories":
-        print("--with-extra ignored, type is not Repositories", file=sys.stderr)
-        a.with_extra = False
+        p.error("--with-extra can only be used with Repositories type")
 
     return {
         "keywords": a.keywords,
         "search_type": a.type,
-        "proxy": proxy,
+        "proxies": normalized_proxies,
         "with_extra": a.with_extra,
     }, a.output
 
@@ -76,6 +74,12 @@ async def main(argv=None):
     setup_logging()
     logger = logging.getLogger(__name__)
     cfg, output_filename = parse_and_normalize_args(argv)
+
+    # Select proxy randomly
+    proxy = random.choice(cfg.pop("proxies"))
+    cfg["proxy"] = proxy
+
+    logger.info(f"Using proxy: {proxy}")
 
     try:
         results = await Crawler(**cfg, logger=logger).run()
@@ -88,11 +92,14 @@ async def main(argv=None):
         return
 
     results_formatted = json.dumps(results, indent=2)
-    print(results_formatted)
+    logger.info(f"Found {len(results)} results")
+    sys.stdout.write(results_formatted)
+
     if output_filename:
         try:
             with open(output_filename, "w", encoding="utf-8") as f:
                 f.write(results_formatted)
+            logger.info(f"Results written to {output_filename}")
         except Exception as e:
             logger.error(
                 f"Failed to write output file {output_filename}: {type(e).__name__}: {e}"

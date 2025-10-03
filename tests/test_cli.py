@@ -28,8 +28,8 @@ def test_proxy_validation_error_exits_2(capsys):
     assert "Invalid proxy format" in err
 
 
-def test_with_extra_ignored_for_non_repos(capsys):
-    """Test that --with-extra is ignored for non-repository search types"""
+def test_with_extra_error_for_non_repos(capsys):
+    """Test that --with-extra with non-repository search types exits with error"""
     argv = [
         "--type",
         "Issues",
@@ -39,10 +39,11 @@ def test_with_extra_ignored_for_non_repos(capsys):
         "python",
         "--with-extra",
     ]
-    cfg, _ = parse_and_normalize_args(argv)
+    with pytest.raises(SystemExit) as e:
+        parse_and_normalize_args(argv)
+    assert e.value.code == 2
     err = capsys.readouterr().err
-    assert "--with-extra ignored" in err
-    assert cfg["with_extra"] is False
+    assert "--with-extra can only be used with Repositories type" in err
 
 
 def test_output_dir_nonexistent_exits_2(tmp_path, capsys):

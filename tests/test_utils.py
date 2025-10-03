@@ -1,7 +1,7 @@
 import pytest
 
 # Adjust imports to your structure
-from github_crawler.utils import normalize_url, normalize_proxy
+from github_crawler.utils import get_normalized_url, normalize_proxy
 
 
 @pytest.mark.parametrize(
@@ -13,7 +13,7 @@ from github_crawler.utils import normalize_url, normalize_proxy
     ],
 )
 def test_normalize_url(inp, expected):
-    assert normalize_url(inp) == expected
+    assert get_normalized_url(inp) == expected
 
 
 @pytest.mark.parametrize(

@@ -30,7 +30,7 @@ def get_request_client(proxy: str) -> httpx.AsyncClient:
     )
 
 
-def normalize_url(url: str) -> str:
+def get_normalized_url(url: str) -> str:
     """
     Normalize a relative or absolute URL to a full GitHub URL
     """
@@ -62,6 +62,7 @@ async def make_request(
     url: str,
     client: httpx.AsyncClient,
     sem: Semaphore,
+    params: dict | None = None,
     max_retries: int = MAX_RETRIES,
     logger: logging.Logger | None = None,
 ) -> httpx.Response | None:
@@ -72,6 +73,7 @@ async def make_request(
         url: The URL to request
         client: The httpx.AsyncClient
         sem: Semaphore
+        params: Optional query parameters dict
         max_retries: Maximum number of retry attempts
         logger: Optional logger instance, creates default if None
 
@@ -84,7 +86,7 @@ async def make_request(
     for attempt in range(max_retries + 1):
         try:
             async with sem:
-                response = await client.get(url)
+                response = await client.get(url, params=params)
 
             # Check for HTTP error status codes that should be retried
             if response.status_code in RETRY_STATUS_CODES:

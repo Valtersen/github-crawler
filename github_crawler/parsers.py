@@ -1,7 +1,7 @@
 from lxml import html
 import logging
 
-from github_crawler.utils import normalize_url
+from github_crawler.utils import get_normalized_url
 from .settings import RESULT_XPATH, LANGUAGES_XPATH
 
 
@@ -16,7 +16,7 @@ def parse_search_results(data: str, logger: logging.Logger | None = None) -> lis
         result_elements = tree.xpath(RESULT_XPATH)
         if result_elements:
             for url in result_elements:
-                results.append({"url": normalize_url(url)})
+                results.append({"url": get_normalized_url(url)})
     except Exception as e:
         logger.error(f"Error parsing search results: {type(e).__name__}: {e}")
     return results

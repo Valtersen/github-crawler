@@ -52,7 +52,7 @@ async def test_timeout_then_success(sem):
 
     async with httpx.AsyncClient() as client:
 
-        async def mock_get(url_param):
+        async def mock_get(url_param, **kw):
             call_count["n"] += 1
             if call_count["n"] == 1:
                 raise httpx.ReadTimeout("-", request=None)
@@ -73,7 +73,7 @@ async def test_network_error_exhausts_retries_returns_none(caplog, sem):
 
     async with httpx.AsyncClient() as client:
 
-        async def mock_get(url_param):
+        async def mock_get(url_param, **kw):
             raise httpx.ConnectError("-", request=None)
 
         client.get = mock_get
@@ -91,7 +91,7 @@ async def test_unexpected_exception_returns_none(caplog, sem):
 
     async with httpx.AsyncClient() as client:
 
-        async def mock_get(url_param):
+        async def mock_get(url_param, **kw):
             raise ValueError("-")
 
         client.get = mock_get
